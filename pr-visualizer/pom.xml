@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="
+            http://maven.apache.org/POM/4.0.0
+            https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Project Information -->
+    <groupId>io.gomobi</groupId>
+    <artifactId>pr-visualizer</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
+    <!-- =========================================================
+         Properties
+         ========================================================= -->
+    <properties>
+
+        <java.version>21</java.version>
+
+        <maven.compiler.release>21</maven.compiler.release>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    </properties>
+
+    <!-- =========================================================
+         Dependencies
+         ========================================================= -->
+    <dependencies>
+
+        <!--
+            JavaParser
+            Used to parse Java source code into an AST.
+        -->
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-core</artifactId>
+            <version>3.27.1</version>
+        </dependency>
+
+    </dependencies>
+
+    <!-- =========================================================
+         Build Configuration
+         ========================================================= -->
+    <build>
+
+        <plugins>
+
+            <!-- =================================================
+                 Java Compiler
+                 ================================================= -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.0</version>
+
+                <configuration>
+                    <release>21</release>
+                </configuration>
+            </plugin>
+
+            <!-- =================================================
+                 Executable Fat JAR
+
+                 Packages:
+                   - Our classes
+                   - JavaParser
+                   - All runtime dependencies
+
+                 into a single executable JAR.
+                 ================================================= -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+<!--                <version>3.6.1</version>-->
+
+                <executions>
+
+                    <execution>
+
+                        <phase>package</phase>
+
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+
+                        <configuration>
+
+                            <!--
+                                Do not modify the original pom.xml
+                                with dependency-reduced-pom.
+                            -->
+                            <createDependencyReducedPom>
+                                false
+                            </createDependencyReducedPom>
+
+                            <!--
+                                Define the application's entry point.
+                            -->
+                            <transformers>
+
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+
+                                    <mainClass>
+                                        io.gomobi.prvisualizer.Main
+                                    </mainClass>
+
+                                </transformer>
+
+                            </transformers>
+
+                        </configuration>
+
+                    </execution>
+
+                </executions>
+
+            </plugin>
+
+            <!-- =================================================
+                 Maven Exec Plugin
+
+                 Useful for running Main directly during
+                 local development without creating a JAR.
+                 ================================================= -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+            </plugin>
+
+        </plugins>
+
+    </build>
+
+</project>
