@@ -18,11 +18,17 @@ jobs:
 
     steps:
 
+      # ---------------------------------------------------------
+      # 1. Checkout repository
+      # ---------------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # ---------------------------------------------------------
+      # 2. Get changed files
+      # ---------------------------------------------------------
       - name: Get changed files
         run: |
           git diff \
@@ -30,37 +36,309 @@ jobs:
             origin/${{ github.base_ref }}...HEAD \
             > changed-files.txt
 
+      # ---------------------------------------------------------
+      # 3. Analyze changed files
+      # ---------------------------------------------------------
+      - name: Analyze changed files
+        run: |
+          mkdir -p pr-review
+
+          echo "## 📦 Changed Components" > pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          # -----------------------------------------------------
+          # Added files
+          # -----------------------------------------------------
+          echo "### 🟢 Added" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep '^A' changed-files.txt | while read -r status file; do
+            echo "- \`$file\`" >> pr-review/changed-components.md
+          done || true
+
+          echo "" >> pr-review/changed-components.md
+
+          # -----------------------------------------------------
+          # Modified files
+          # -----------------------------------------------------
+          echo "### 🟡 Modified" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep '^M' changed-files.txt | while read -r status file; do
+            echo "- \`$file\`" >> pr-review/changed-components.md
+          done || true
+
+          echo "" >> pr-review/changed-components.md
+
+          # -----------------------------------------------------
+          # Deleted files
+          # -----------------------------------------------------
+          echo "### 🔴 Deleted" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep '^D' changed-files.txt | while read -r status file; do
+            echo "- \`$file\`" >> pr-review/changed-components.md
+          done || true
+
+          echo "" >> pr-review/changed-components.md
+
+      # ---------------------------------------------------------
+      # 4. Classify changed files by architecture area
+      # ---------------------------------------------------------
+      - name: Classify architecture changes
+        run: |
+
+          cat >> pr-review/changed-components.md <<'EOF'
+
+          ## 🏗 Architecture Areas
+
+          EOF
+
+          # -----------------------------------------------------
+          # API
+          # -----------------------------------------------------
+          echo "### 🌐 API" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep 'src/main/java/io/gomobi/quartz/api/' changed-files.txt \
+            | awk '{print "- `" $2 "`"}' \
+            >> pr-review/changed-components.md || true
+
+          echo "" >> pr-review/changed-components.md
+
+          # -----------------------------------------------------
+          # Service
+          # -----------------------------------------------------
+          echo "### ⚙️ Service" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep 'src/main/java/io/gomobi/quartz/service/' changed-files.txt \
+            | awk '{print "- `" $2 "`"}' \
+            >> pr-review/changed-components.md || true
+
+          echo "" >> pr-review/changed-components.md
+
+          # -----------------------------------------------------
+          # Scheduler
+          # -----------------------------------------------------
+          echo "### ⏰ Scheduler" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep 'src/main/java/io/gomobi/quartz/scheduler/' changed-files.txt \
+            | awk '{print "- `" $2 "`"}' \
+            >> pr-review/changed-components.md || true
+
+          echo "" >> pr-review/changed-components.md
+
+          # -----------------------------------------------------
+          # Domain / Repository
+          # -----------------------------------------------------
+          echo "### 🗄️ Domain / Repository" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep 'src/main/java/io/gomobi/quartz/domain/' changed-files.txt \
+            | awk '{print "- `" $2 "`"}' \
+            >> pr-review/changed-components.md || true
+
+          echo "" >> pr-review/changed-components.md
+
+          # -----------------------------------------------------
+          # Client
+          # -----------------------------------------------------
+          echo "### 🔌 Client" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep 'src/main/java/io/gomobi/quartz/client/' changed-files.txt \
+            | awk '{print "- `" $2 "`"}' \
+            >> pr-review/changed-components.md || true
+
+          echo "" >> pr-review/changed-components.md
+
+          # -----------------------------------------------------
+          # External
+          # -----------------------------------------------------
+          echo "### 🌍 External" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep 'src/main/java/io/gomobi/quartz/external/' changed-files.txt \
+            | awk '{print "- `" $2 "`"}' \
+            >> pr-review/changed-components.md || true
+
+          echo "" >> pr-review/changed-components.md
+
+          # -----------------------------------------------------
+          # Adapter
+          # -----------------------------------------------------
+          echo "### 🔄 Adapter" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep 'src/main/java/io/gomobi/quartz/adapter/' changed-files.txt \
+            | awk '{print "- `" $2 "`"}' \
+            >> pr-review/changed-components.md || true
+
+          echo "" >> pr-review/changed-components.md
+
+          # -----------------------------------------------------
+          # Event
+          # -----------------------------------------------------
+          echo "### 📡 Event" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep 'src/main/java/io/gomobi/quartz/event/' changed-files.txt \
+            | awk '{print "- `" $2 "`"}' \
+            >> pr-review/changed-components.md || true
+
+          echo "" >> pr-review/changed-components.md
+
+          # -----------------------------------------------------
+          # Config
+          # -----------------------------------------------------
+          echo "### ⚙️ Config" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep 'src/main/java/io/gomobi/quartz/config/' changed-files.txt \
+            | awk '{print "- `" $2 "`"}' \
+            >> pr-review/changed-components.md || true
+
+          echo "" >> pr-review/changed-components.md
+
+          # -----------------------------------------------------
+          # DTO
+          # -----------------------------------------------------
+          echo "### 📦 DTO" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep 'src/main/java/io/gomobi/quartz/dto/' changed-files.txt \
+            | awk '{print "- `" $2 "`"}' \
+            >> pr-review/changed-components.md || true
+
+          echo "" >> pr-review/changed-components.md
+
+          # -----------------------------------------------------
+          # Common
+          # -----------------------------------------------------
+          echo "### 🧰 Common" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep 'src/main/java/io/gomobi/quartz/common/' changed-files.txt \
+            | awk '{print "- `" $2 "`"}' \
+            >> pr-review/changed-components.md || true
+
+          echo "" >> pr-review/changed-components.md
+
+          # -----------------------------------------------------
+          # Other
+          # -----------------------------------------------------
+          echo "### 📁 Other" >> pr-review/changed-components.md
+          echo "" >> pr-review/changed-components.md
+
+          grep 'src/main/java/io/gomobi/quartz/' changed-files.txt \
+            | grep -vE \
+              'src/main/java/io/gomobi/quartz/(api|service|scheduler|domain|client|external|adapter|event|config|dto|common)/' \
+            | awk '{print "- `" $2 "`"}' \
+            >> pr-review/changed-components.md || true
+
+      # ---------------------------------------------------------
+      # 5. Display changed files in Action logs
+      # ---------------------------------------------------------
       - name: Display changed files
         run: |
-          echo "Changed files:"
+          echo "========================================"
+          echo "Changed files"
+          echo "========================================"
+
           cat changed-files.txt
 
+          echo ""
+          echo "========================================"
+          echo "Generated architecture analysis"
+          echo "========================================"
+
+          cat pr-review/changed-components.md
+
+      # ---------------------------------------------------------
+      # 6. Generate PR visualization
+      # ---------------------------------------------------------
       - name: Generate PR visualization
         run: |
+
           mkdir -p pr-review
 
           cat > pr-review/review.md <<'EOF'
           ## 🤖 PR Visual Review
 
-          ### 🔄 Request Flow
+          > Automatically generated from the changes in this pull request.
+
+          ---
+
+          ## 🔄 High-Level Architecture Flow
 
           ```mermaid
           flowchart TD
-              A[Payment Request] --> B[PaymentController]
-              B --> C[PaymentService]
-              C --> D[RoutingEngine]
-              D --> E[RoutingStrategy]
-              E --> F[Connector]
+              A[API] --> B[Service]
+              B --> C[Scheduler]
+              B --> D[Domain / Repository]
+              B --> E[Client]
+              E --> F[External System]
+              B --> G[Event]
           ```
 
-          ### 📦 Changed Components
+          > ⚠️ This is currently a high-level architecture view.
+          >
+          > The next version will derive the actual flow from the Java source code.
+
+          ---
 
           EOF
 
-          cat changed-files.txt >> pr-review/review.md
+          cat pr-review/changed-components.md >> pr-review/review.md
 
+          cat >> pr-review/review.md <<'EOF'
+
+          ---
+
+          ## 📄 Raw Changed Files
+
+          EOF
+
+          echo '```text' >> pr-review/review.md
+          cat changed-files.txt >> pr-review/review.md
+          echo '```' >> pr-review/review.md
+
+          cat >> pr-review/review.md <<'EOF'
+
+          ---
+
+          ## 🚧 Next Level
+
+          The visualizer will progressively analyze:
+
+          1. Changed Java classes
+          2. Spring components
+          3. Constructor dependencies
+          4. Method calls
+          5. Controller → Service → Repository / Client flow
+          6. External API interactions
+          7. Before vs After architecture
+
+          EOF
+
+      # ---------------------------------------------------------
+      # 7. Upload generated report
+      # ---------------------------------------------------------
       - name: Upload review report
         uses: actions/upload-artifact@v4
         with:
           name: pr-visual-review
-          path: pr-review/review.md
+          path: pr-review/
+
+      # ---------------------------------------------------------
+      # 8. Post generated report to PR
+      # ---------------------------------------------------------
+      - name: Post visual review to PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment \
+            ${{ github.event.pull_request.number }} \
+            --body-file pr-review/review.md
