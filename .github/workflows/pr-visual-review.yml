@@ -1,0 +1,66 @@
+name: PR Visual Review
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  visual-review:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        run: |
+          git diff \
+            --name-status \
+            origin/${{ github.base_ref }}...HEAD \
+            > changed-files.txt
+
+      - name: Display changed files
+        run: |
+          echo "Changed files:"
+          cat changed-files.txt
+
+      - name: Generate PR visualization
+        run: |
+          mkdir -p pr-review
+
+          cat > pr-review/review.md <<'EOF'
+          ## 🤖 PR Visual Review
+
+          ### 🔄 Request Flow
+
+          ```mermaid
+          flowchart TD
+              A[Payment Request] --> B[PaymentController]
+              B --> C[PaymentService]
+              C --> D[RoutingEngine]
+              D --> E[RoutingStrategy]
+              E --> F[Connector]
+          ```
+
+          ### 📦 Changed Components
+
+          EOF
+
+          cat changed-files.txt >> pr-review/review.md
+
+      - name: Upload review report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-visual-review
+          path: pr-review/review.md
