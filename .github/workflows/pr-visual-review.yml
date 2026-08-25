@@ -63,10 +63,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pr-visual-review
-          path: pr-review/review.md
-          
-  
-              - name: Post visual review to PR
+          path: pr-review/
+
+      - name: Post visual review to PR
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
